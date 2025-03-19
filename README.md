@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![GitHub last commit](https://img.shields.io/github/last-commit/kajid/ScheduleManager-openapi)
+![GitHub last commit](https://img.shields.io/github/last-commit/FungiFur-Strikers/ScheduleManager-openapi)
 ![GitHub](https://img.shields.io/github/license/kajid/ScheduleManager-openapi)
 
 </div>
@@ -40,7 +40,7 @@
 
 1. **リポジトリのクローン**
 ```bash
-git clone https://github.com/kajid/ScheduleManager-openapi.git
+git clone -b main https://github.com/FungiFur-Strikers/ScheduleManager-openapi.git
 cd ScheduleManager-openapi
 ```
 
