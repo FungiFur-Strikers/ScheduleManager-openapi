@@ -1,0 +1,962 @@
+openapi: 3.0.0
+info:
+  title: スケジュール管理API
+  description: スケジュール、案件、カテゴリを管理するためのAPI仕様
+  version: 0.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: 開発サーバー
+
+tags:
+  - name: schedules
+    description: スケジュール管理
+  - name: projects
+    description: 案件管理
+  - name: categories
+    description: カテゴリ設定
+  - name: auth
+    description: 認証・アカウント管理
+  - name: statistics
+    description: 統計機能
+  - name: agent
+    description: エージェント確認
+  - name: resume
+    description: 職務経歴書ダウンロード機能
+  - name: settings
+    description: アカウント設定
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    UnauthorizedError:
+      description: 認証エラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFoundError:
+      description: リソースが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    BadRequestError:
+      description: 不正なリクエスト
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    ServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NoContent:
+      description: 正常に処理されました（コンテンツなし）
+    
+    ConflictError:
+      description: リソースの競合が発生しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: エラーコード
+        message:
+          type: string
+          description: エラーメッセージ
+      required:
+        - code
+        - message
+
+    # スケジュール関連スキーマ
+    Schedule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: スケジュールのユニークID
+        title:
+          type: string
+          description: スケジュールのタイトル
+        startTime:
+          type: string
+          format: date-time
+          description: 開始日時
+        endTime:
+          type: string
+          format: date-time
+          description: 終了日時
+        description:
+          type: string
+          description: スケジュールの詳細説明
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: 関連するカテゴリIDの配列
+      required:
+        - id
+        - title
+        - startTime
+        - endTime
+
+    ScheduleInput:
+      type: object
+      properties:
+        title:
+          type: string
+          description: スケジュールのタイトル
+        startTime:
+          type: string
+          format: date-time
+          description: 開始日時
+        endTime:
+          type: string
+          format: date-time
+          description: 終了日時
+        description:
+          type: string
+          description: スケジュールの詳細説明
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: 関連するカテゴリIDの配列
+      required:
+        - title
+        - startTime
+        - endTime
+
+    ScheduleList:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: スケジュールのユニークID
+          title:
+            type: string
+            description: スケジュールのタイトル
+          startTime:
+            type: string
+            format: date-time
+            description: 開始日時
+          endTime:
+            type: string
+            format: date-time
+            description: 終了日時
+        required:
+          - id
+          - title
+          - startTime
+          - endTime
+
+    # 案件関連スキーマ
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 案件のユニークID
+        name:
+          type: string
+          description: 案件名
+        startDate:
+          type: string
+          format: date
+          description: 開始日付
+        endDate:
+          type: string
+          format: date
+          description: 終了日付
+        rate:
+          type: number
+          description: 単価
+        hourlyRate:
+          type: number
+          description: 時給
+        language:
+          type: string
+          description: 使用言語
+        companyName:
+          type: string
+          description: 会社名
+        agent:
+          type: string
+          description: エージェント
+        notes:
+          type: string
+          description: 備考
+      required:
+        - id
+        - name
+        - startDate
+        - endDate
+        - language
+        - companyName
+
+    ProjectInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 案件名
+        startDate:
+          type: string
+          format: date
+          description: 開始日付
+        endDate:
+          type: string
+          format: date
+          description: 終了日付
+        rate:
+          type: number
+          description: 単価
+        hourlyRate:
+          type: number
+          description: 時給
+        language:
+          type: string
+          description: 使用言語
+        companyName:
+          type: string
+          description: 会社名
+        agent:
+          type: string
+          description: エージェント
+        notes:
+          type: string
+          description: 備考
+      required:
+        - name
+        - startDate
+        - endDate
+        - language
+        - companyName
+
+    # カテゴリ関連スキーマ
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: カテゴリのユニークID
+        name:
+          type: string
+          description: カテゴリ名
+      required:
+        - id
+        - name
+
+    CategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: カテゴリ名
+      required:
+        - name
+
+    # 認証関連スキーマ
+    UserCredentials:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ユーザーID
+        password:
+          type: string
+          format: password
+          description: パスワード
+      required:
+        - userId
+        - password
+
+    UserSignup:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ユーザーID
+        username:
+          type: string
+          description: ユーザー名
+        password:
+          type: string
+          format: password
+          description: パスワード
+      required:
+        - userId
+        - username
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT認証トークン
+        userId:
+          type: string
+          description: ユーザーID
+        username:
+          type: string
+          description: ユーザー名
+      required:
+        - token
+        - userId
+
+    GuestAccount:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ゲストユーザーID
+        username:
+          type: string
+          description: ゲストユーザー名
+        password:
+          type: string
+          description: ゲストパスワード
+      required:
+        - userId
+        - username
+        - password
+
+paths:
+  # スケジュール関連エンドポイント
+  /schedules:
+    get:
+      tags:
+        - schedules
+      summary: スケジュール一覧の取得
+      description: 登録されているスケジュールの一覧を取得します。クエリパラメータでフィルタリングが可能です。
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fromDate
+          in: query
+          description: この日時以降のスケジュールを取得
+          schema:
+            type: string
+            format: date-time
+        - name: toDate
+          in: query
+          description: この日時以前のスケジュールを取得
+          schema:
+            type: string
+            format: date-time
+        - name: title
+          in: query
+          description: タイトルで部分一致
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: 内容で部分一致
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 正常にスケジュールを取得
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleList'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    post:
+      tags:
+        - schedules
+      summary: 新規スケジュールの作成
+      description: 新しいスケジュールを作成します
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleInput'
+      responses:
+        '201':
+          description: スケジュールの作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /schedules/{scheduleId}:
+    parameters:
+      - name: scheduleId
+        in: path
+        required: true
+        description: スケジュールのID
+        schema:
+          type: string
+          format: uuid
+    
+    get:
+      tags:
+        - schedules
+      summary: スケジュール詳細の取得
+      description: 指定されたIDのスケジュール詳細を取得します
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常にスケジュール詳細を取得
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    put:
+      tags:
+        - schedules
+      summary: スケジュールの更新
+      description: 指定されたIDのスケジュールを更新します
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleInput'
+      responses:
+        '200':
+          description: スケジュールの更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    delete:
+      tags:
+        - schedules
+      summary: スケジュールの削除
+      description: 指定されたIDのスケジュールを削除します
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # 案件関連エンドポイント
+  /projects:
+    get:
+      tags:
+        - projects
+      summary: 案件一覧の取得
+      description: 登録されている案件の一覧を取得します。クエリパラメータでフィルタリングが可能です。
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fromStartDate
+          in: query
+          description: この開始日以降の案件を取得
+          schema:
+            type: string
+            format: date
+        - name: toStartDate
+          in: query
+          description: この開始日以前の案件を取得
+          schema:
+            type: string
+            format: date
+        - name: fromEndDate
+          in: query
+          description: この終了日以降の案件を取得
+          schema:
+            type: string
+            format: date
+        - name: toEndDate
+          in: query
+          description: この終了日以前の案件を取得
+          schema:
+            type: string
+            format: date
+        - name: name
+          in: query
+          description: 案件名で部分一致
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: 内容で部分一致
+          schema:
+            type: string
+        - name: minRate
+          in: query
+          description: 最低単価
+          schema:
+            type: number
+        - name: maxRate
+          in: query
+          description: 最高単価
+          schema:
+            type: number
+      responses:
+        '200':
+          description: 正常に案件一覧を取得
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    post:
+      tags:
+        - projects
+      summary: 新規案件の作成
+      description: 新しい案件を作成します
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectInput'
+      responses:
+        '201':
+          description: 案件の作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /projects/{projectId}:
+    parameters:
+      - name: projectId
+        in: path
+        required: true
+        description: 案件のID
+        schema:
+          type: string
+          format: uuid
+    
+    get:
+      tags:
+        - projects
+      summary: 案件詳細の取得
+      description: 指定されたIDの案件詳細を取得します
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常に案件詳細を取得
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    put:
+      tags:
+        - projects
+      summary: 案件の更新
+      description: 指定されたIDの案件を更新します
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectInput'
+      responses:
+        '200':
+          description: 案件の更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    delete:
+      tags:
+        - projects
+      summary: 案件の削除
+      description: 指定されたIDの案件を削除します
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # カテゴリ関連エンドポイント
+  /categories:
+    get:
+      tags:
+        - categories
+      summary: カテゴリ一覧の取得
+      description: 登録されているカテゴリの一覧を取得します
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常にカテゴリ一覧を取得
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    post:
+      tags:
+        - categories
+      summary: 新規カテゴリの作成
+      description: 新しいカテゴリを作成します
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '201':
+          description: カテゴリの作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /categories/{categoryId}:
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        description: カテゴリのID
+        schema:
+          type: string
+          format: uuid
+    
+    put:
+      tags:
+        - categories
+      summary: カテゴリの更新
+      description: 指定されたIDのカテゴリを更新します
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '200':
+          description: カテゴリの更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    delete:
+      tags:
+        - categories
+      summary: カテゴリの削除
+      description: 指定されたIDのカテゴリを削除します
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # 認証関連エンドポイント
+  /auth/signin:
+    post:
+      tags:
+        - auth
+      summary: サインイン
+      description: ユーザーIDとパスワードでサインインし、JWTトークンを取得します
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '200':
+          description: サインイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/signup:
+    post:
+      tags:
+        - auth
+      summary: サインアップ
+      description: 新規ユーザーを登録します
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignup'
+      responses:
+        '201':
+          description: サインアップ成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/guest:
+    post:
+      tags:
+        - auth
+      summary: ゲストアカウント作成
+      description: 一時的なゲストアカウントを作成します
+      responses:
+        '201':
+          description: ゲストアカウント作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuestAccount'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # 統計機能 (TBD)
+  /statistics:
+    get:
+      tags:
+        - statistics
+      summary: 統計情報の取得
+      description: TBD - 統計情報の詳細は未定義
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常に統計情報を取得
+          content:
+            application/json:
+              schema:
+                type: object
+                description: TBD - 統計情報のスキーマは未定義
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # エージェント確認 (TBD)
+  /agents:
+    get:
+      tags:
+        - agent
+      summary: エージェント一覧の取得
+      description: TBD - エージェント確認機能の詳細は未定義
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常にエージェント情報を取得
+          content:
+            application/json:
+              schema:
+                type: object
+                description: TBD - エージェント情報のスキーマは未定義
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # 職務経歴書ダウンロード機能 (TBD)
+  /resume:
+    get:
+      tags:
+        - resume
+      summary: 職務経歴書のダウンロード
+      description: TBD - 職務経歴書ダウンロード機能の詳細は未定義
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常に職務経歴書を取得
+          content:
+            application/json:
+              schema:
+                type: object
+                description: TBD - 職務経歴書のスキーマは未定義
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # アカウント設定 (TBD)
+  /settings/account:
+    get:
+      tags:
+        - settings
+      summary: アカウント設定の取得
+      description: TBD - アカウント設定機能の詳細は未定義
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 正常にアカウント設定を取得
+          content:
+            application/json:
+              schema:
+                type: object
+                description: TBD - アカウント設定のスキーマは未定義
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    
+    put:
+      tags:
+        - settings
+      summary: アカウント設定の更新
+      description: TBD - アカウント設定機能の詳細は未定義
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: TBD - アカウント設定更新のスキーマは未定義
+      responses:
+        '200':
+          description: アカウント設定の更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                description: TBD - アカウント設定のスキーマは未定義
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'

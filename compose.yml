@@ -1,0 +1,14 @@
+services:
+  redoc:
+    image: redocly/redoc
+    ports:
+      - "8080:80"
+    environment:
+      - SPEC_URL=openapi.yml
+    develop:
+      watch:
+        - path: ./openapi.yml
+          action: sync
+          target: /usr/share/nginx/html/openapi.yml
+          ignore:
+            - "*.swp"
