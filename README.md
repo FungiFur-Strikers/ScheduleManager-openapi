@@ -45,8 +45,9 @@ cd ScheduleManager-openapi
 ```
 
 2. **Dockerコンテナの起動**
+
 ```bash
-docker-compose up
+docker compose watch
 ```
 
 3. **APIドキュメントへのアクセス**
