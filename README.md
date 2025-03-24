@@ -3,7 +3,7 @@
 <div align="center">
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/FungiFur-Strikers/ScheduleManager-openapi)
-![GitHub](https://img.shields.io/github/license/kajid/ScheduleManager-openapi)
+![GitHub](https://img.shields.io/github/license/FungiFur-Strikers/ScheduleManager-openapi)
 
 </div>
 
@@ -23,7 +23,7 @@
 
 <div align="center">
 
-### [Redoc形式のドキュメントを見る](https://kajid.github.io/ScheduleManager-openapi/)
+### [Redoc形式のドキュメントを見る](https://fungifur-strikers.github.io/ScheduleManager-openapi/)
 
 </div>
 
