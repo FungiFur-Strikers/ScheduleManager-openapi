@@ -851,6 +851,7 @@ paths:
     post:
       tags:
         - auth
+      security: []
       summary: ユーザー登録
       description: 新規ユーザーを登録します
       operationId: signUp
@@ -878,6 +879,7 @@ paths:
     post:
       tags:
         - auth
+      security: []
       summary: ログイン
       description: 登録済みユーザーのログイン認証
       operationId: signIn
